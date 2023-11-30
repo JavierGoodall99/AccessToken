@@ -42,7 +42,10 @@ const App: React.FC = () => {
       .then((response) => {
         const token = response.accessToken;
         setAccessToken(token);
-        
+
+        // Store the access token in sessionStorage
+        sessionStorage.setItem('accessToken', token);
+
         console.log("Access Token:", token);
       })
       .catch((error) => {
@@ -50,6 +53,8 @@ const App: React.FC = () => {
       });
     } else {
       setAccessToken(null);
+      // Remove the access token from sessionStorage if user is not authenticated
+      sessionStorage.removeItem('accessToken');
     }
   }, [accounts.length, accounts, instance]);
 

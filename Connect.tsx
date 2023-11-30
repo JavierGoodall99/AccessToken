@@ -1,48 +1,49 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useMsal } from '@azure/msal-react';
 import { View, Text } from 'react-native';
-import { Platform } from 'react-native';
 
-const Connect = ({ token }) => {
-  const [data, setData] = useState(null);
+const Connect: React.FC = () => {
+  const { instance, accounts } = useMsal();
+  const [apiData, setApiData] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const apiUrl = 'https://databalk.api.crm4.dynamics.com/api/data/v9.2/incidents/';
-        console.log('API URL:', apiUrl);
+      if (accounts.length > 0) {
+        try {
+          const response = await instance.acquireTokenSilent({
+            account: accounts[0],
+            scopes: ['openid https://databalk.api.crm4.dynamics.com/.default'],
+          });
 
-        const response = await fetch(apiUrl, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+          const accessToken = response.accessToken;
+          console.log('Access Token:', accessToken);
 
-        console.log('Response Status:', response.status);
-        console.log('Response OK:', response.ok);
+          const apiUrl = 'https://databalk.api.crm4.dynamics.com/api/data/v9.2/cr44a_aanvragens/';
+          const apiResponse = await axios.get(apiUrl, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
 
-        if (!response.ok) {
-          console.error('Network response was not ok');
-          return;
+          setApiData(apiResponse.data);
+        } catch (error) {
+          console.error('Error acquiring token or making API request:', error);
         }
-
-        const result = await response.json();
-        console.log('Fetched Data:', result);
-        setData(result);
-      } catch (error) {
-        console.error('Error fetching data:', error);
       }
     };
 
-    if (token) {
-      fetchData();
-    }
-  }, [token]);
+    fetchData();
+  }, [accounts, instance]);
 
   return (
     <View>
-      <Text>Data: {data ? JSON.stringify(data) : 'Loading...'}</Text>
+      <Text>API Data:</Text>
+      {apiData && (
+        <View>
+          <Text>{JSON.stringify(apiData, null, 2)}</Text>
+        </View>
+      )}
     </View>
   );
 };
