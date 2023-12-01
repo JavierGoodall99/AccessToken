@@ -1,49 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useMsal } from '@azure/msal-react';
 import { View, Text } from 'react-native';
 
-const Connect: React.FC = () => {
-  const { instance, accounts } = useMsal();
-  const [apiData, setApiData] = useState(null);
+const Connect = ({ accessToken }) => {
+  const [data, setData] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (accounts.length > 0) {
-        try {
-          const response = await instance.acquireTokenSilent({
-            account: accounts[0],
-            scopes: ['openid https://databalk.api.crm4.dynamics.com/.default'],
-          });
+    if (accessToken) {
+      // Define the API endpoint
+      const apiUrl = 'https://databalk.api.crm4.dynamics.com/api/data/v9.2/cr44a_aanvragens/';
 
-          const accessToken = response.accessToken;
-          console.log('Access Token:', accessToken);
-
-          const apiUrl = 'https://databalk.api.crm4.dynamics.com/api/data/v9.2/cr44a_aanvragens/';
-          const apiResponse = await axios.get(apiUrl, {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
-
-          setApiData(apiResponse.data);
-        } catch (error) {
-          console.error('Error acquiring token or making API request:', error);
-        }
-      }
-    };
-
-    fetchData();
-  }, [accounts, instance]);
+      // Fetch data using the access token
+      fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((response) => response.json())
+        .then((responseData) => {
+          // Set the fetched data in the component state
+          setData(responseData);
+        })
+        .catch((error) => {
+          console.error('Error fetching data:', error);
+        });
+    }
+  }, [accessToken]);
 
   return (
     <View>
-      <Text>API Data:</Text>
-      {apiData && (
-        <View>
-          <Text>{JSON.stringify(apiData, null, 2)}</Text>
-        </View>
-      )}
+      <Text>Data from API:</Text>
+      <Text>{JSON.stringify(data, null, 2)}</Text>
     </View>
   );
 };

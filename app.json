@@ -6,6 +6,14 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "plugins": [
+      [
+        "react-native-msal",
+        {
+          "androidPackageSignatureHash": "Y29tLnZlcmxvZg=="
+        }
+      ]
+    ],
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -15,6 +23,7 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "verlof",
       "supportsTablet": true
     },
     "android": {
@@ -26,6 +35,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c2a9d320-22a3-4695-a4f4-b893cc1419cd"
+      }
     }
   }
 }
